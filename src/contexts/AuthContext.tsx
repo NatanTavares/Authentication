@@ -1,6 +1,6 @@
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/dist/client/router";
-import nookies from "nookies";
+import { setCookie, parseCookies } from "nookies";
 
 import { api } from "../services/api";
 
@@ -45,22 +45,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password,
       });
 
-      nookies.set(undefined, "@auth.token", data.token, {
+      setCookie(undefined, "@auth.token", data.token, {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
       });
 
-      nookies.set(undefined, "@auth.refreshToken", data.refreshToken, {
+      setCookie(undefined, "@auth.refreshToken", data.refreshToken, {
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
       });
 
       setUser(data);
+      api.defaults.headers["Authorization"] = `Bearer ${data.token}`;
       router.push("dashboard");
     } catch (err) {
       console.log("deu ruim", { err });
     }
   }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { "@auth.token": token } = parseCookies();
+        if (token) {
+          const { data } = await api.get<User>("me");
+          setUser(data);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, signIn, user }}>
