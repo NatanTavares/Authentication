@@ -2,6 +2,8 @@ import Head from "next/head";
 import { FormEvent, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
+import { Button } from "../components/Button";
+
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
@@ -46,9 +48,8 @@ export default function Home() {
             onChange={(event) => setPassword(event.target.value)}
           />
         </label>
-        <button type="submit" className={styles.button}>
-          Sign in
-        </button>
+
+        <Button type="submit" label="Sign in" />
       </form>
     </div>
   );
