@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
-import { useRouter } from "next/dist/client/router";
-import { setCookie, parseCookies } from "nookies";
+import { setCookie, parseCookies, destroyCookie } from "nookies";
+import Router from "next/dist/client/router";
 
 import { api } from "../services/api";
 
@@ -22,6 +22,7 @@ type SignInCredentials = {
 
 type AuthContextType = {
   signIn(credentials: SignInCredentials): Promise<void>;
+  signOut(): void;
   isAuthenticated: boolean;
   user: User | null;
 };
@@ -36,7 +37,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const isAuthenticated = !!user;
 
-  const router = useRouter();
+  function signOut() {
+    destroyCookie(undefined, "@auth.token");
+    destroyCookie(undefined, "@auth.refreshToken");
+
+    setUser(null);
+
+    Router.push("/");
+  }
 
   async function signIn({ email, password }: SignInCredentials) {
     try {
@@ -57,30 +65,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUser(data);
       api.defaults.headers["Authorization"] = `Bearer ${data.token}`;
-      router.push("dashboard");
+
+      Router.push("dashboard");
     } catch (err) {
       console.log("deu ruim", { err });
     }
   }
 
   useEffect(() => {
-    (async () => {
-      try {
-        const { "@auth.token": token } = parseCookies();
-        if (token) {
-          const { data } = await api.get<User>("me");
-          setUser(data);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.log(err);
+    try {
+      const { "@auth.token": token } = parseCookies();
+      if (token) {
+        api
+          .get<User>("me")
+          .then((response) => {
+            const { email, permissions, roles } = response.data;
+            setUser({ email, permissions, roles });
+          })
+          .catch(() => {
+            signOut();
+          });
+      } else {
+        setUser(null);
       }
-    })();
+    } catch (err) {
+      console.log(err);
+    }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, signIn, user }}>
+    <AuthContext.Provider value={{ isAuthenticated, signIn, user, signOut }}>
       {children}
     </AuthContext.Provider>
   );
