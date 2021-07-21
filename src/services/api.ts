@@ -54,7 +54,7 @@ api.interceptors.response.use(
               failedRequestsQueue = [];
             })
             .catch((err) => {
-              failedRequestsQueue.forEach((request) => request.failure(err));
+              failedRequestsQueue.forEach((request) => request.onFailure(err));
               failedRequestsQueue = [];
             })
             .finally(() => {
