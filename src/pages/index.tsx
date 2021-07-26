@@ -1,6 +1,8 @@
 import Head from "next/head";
-import { FormEvent, useState } from "react";
+import { parseCookies } from "nookies";
+import { GetServerSideProps } from "next";
 import { useAuth } from "../hooks/useAuth";
+import { FormEvent, useState } from "react";
 
 import { Button } from "../components/Button";
 
@@ -54,3 +56,20 @@ export default function Home() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const cookies = parseCookies(ctx);
+
+  if (cookies["@auth.token"]) {
+    return {
+      redirect: {
+        destination: "/dashboard",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};
