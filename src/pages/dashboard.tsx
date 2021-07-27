@@ -1,19 +1,14 @@
-import { useRouter } from "next/dist/client/router";
-import { Button } from "../components/Button";
-import { useAuth } from "../hooks/useAuth";
 import Head from "next/head";
+import { useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { api } from "../services/apiClient";
+import { withSSRAuthenticated } from "../utils/withSSRAuthenticated";
 
 import styles from "../styles/Dashboard.module.css";
-import { useEffect } from "react";
-import { api } from "../services/api";
+import { setupAPIClient } from "../services/api";
 
 export default function Dashboard() {
-  const { isAuthenticated } = useAuth();
-  const router = useRouter();
-
-  const Not = isAuthenticated ? null : (
-    <strong className={styles.alert}>not</strong>
-  );
+  const { user } = useAuth();
 
   useEffect(() => {
     api
@@ -29,15 +24,21 @@ export default function Dashboard() {
       </Head>
 
       <main>
-        <h1>You are {Not} logged in!</h1>
-        {!isAuthenticated && (
-          <Button
-            type="button"
-            label={"Login"}
-            onClick={(event) => router.push("/")}
-          />
-        )}
+        <h1>You are logged in!</h1>
+
+        <strong className={styles.alert}>{user?.email}</strong>
       </main>
     </div>
   );
 }
+
+export const getServerSideProps = withSSRAuthenticated(async (ctx) => {
+  const apiClient = setupAPIClient(ctx);
+  const response = await apiClient.get("me");
+
+  console.log(response.data);
+
+  return {
+    props: {},
+  };
+});
