@@ -65,7 +65,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       Router.push("dashboard");
     } catch (err) {
-      console.log("deu ruim", { err });
+      console.log(err);
     }
   }
 
