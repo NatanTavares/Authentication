@@ -7,14 +7,9 @@ import { setupAPIClient } from "../services/api";
 import { withSSRAuthenticated } from "../utils/withSSRAuthenticated";
 
 import styles from "../styles/Dashboard.module.css";
+import { Can } from "../components/Can";
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  const userCanSeeMetrics = useCan({
-    roles: ["administrator", "editor"],
-    permissions: ["metrics.list"],
-  });
-
   useEffect(() => {
     api
       .get("me")
@@ -31,13 +26,9 @@ export default function Dashboard() {
       <main>
         <h1>You are logged in!</h1>
 
-        <strong className={styles.alert}>{user?.email}</strong>
-
-        {userCanSeeMetrics && (
-          <div>
-            <h1>Métricas</h1>
-          </div>
-        )}
+        <Can permissions={["metrics.list"]}>
+          <h1 className={styles.alert}>Metrics</h1>
+        </Can>
       </main>
     </div>
   );
