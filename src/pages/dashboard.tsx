@@ -27,7 +27,7 @@ export default function Dashboard() {
         <h1>You are logged in!</h1>
 
         <Can permissions={["metrics.list"]}>
-          <h1 className={styles.alert}>Metrics</h1>
+          <h1 className={styles.alert}>Metric</h1>
         </Can>
       </main>
     </div>
@@ -37,7 +37,6 @@ export default function Dashboard() {
 export const getServerSideProps = withSSRAuthenticated(async (ctx) => {
   const apiClient = setupAPIClient(ctx);
   const response = await apiClient.get("me");
-  console.log(response);
 
   return {
     props: {},
