@@ -1,15 +1,16 @@
 import Head from "next/head";
 import { useEffect } from "react";
-import { useCan } from "../hooks/useCan";
+import { Can } from "../components/Can";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../services/apiClient";
+import { Button } from "../components/Button";
 import { setupAPIClient } from "../services/api";
 import { withSSRAuthenticated } from "../utils/withSSRAuthenticated";
 
 import styles from "../styles/Dashboard.module.css";
-import { Can } from "../components/Can";
 
 export default function Dashboard() {
+  const { signOut } = useAuth();
   useEffect(() => {
     api
       .get("me")
@@ -27,8 +28,10 @@ export default function Dashboard() {
         <h1>You are logged in!</h1>
 
         <Can permissions={["metrics.list"]}>
-          <h1 className={styles.alert}>Metric</h1>
+          <h4 className={styles.alert}>You have access to the Metrics page</h4>
         </Can>
+
+        <Button label="Sign-out" onClick={signOut} />
       </main>
     </div>
   );
